@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocoOperator-4B</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0a14;--bg2:#120f1e;--bg3:#1a1528;
+  --text:#f0edf7;--text-dim:#a89ec0;--text-muted:#6b5f85;
+  --gold:#fbbf24;--amber:#f59e0b;--violet:#a78bfa;--purple:#7c3aed;
+  --rose:#f472b6;--fuchsia:#d946ef;
+  --grad1:linear-gradient(135deg,#fbbf24,#f59e0b,#f472b6,#a78bfa,#7c3aed);
+  --grad-hero:linear-gradient(135deg,#fbbf24,#f59e0b,#38bdf8,#3b82f6,#a78bfa,#7c3aed);
+  --grad2:linear-gradient(135deg,#fbbf24 0%,#a78bfa 100%);
+  --grad-soft:linear-gradient(135deg,rgba(251,191,36,0.12),rgba(167,139,250,0.12));
+  --border:rgba(167,139,250,0.15);
+  --orb1:rgba(251,191,36,0.08);--orb2:rgba(124,58,237,0.1);--orb3:rgba(244,114,182,0.06);
+  --card-hover-bg:rgba(167,139,250,0.03);
+  --bar-a-from:var(--gold);--bar-a-to:var(--amber);
+  --bar-b-from:var(--violet);--bar-b-to:var(--purple);
+  --font-display:'Sora',sans-serif;--font-mono:'DM Mono',monospace;
+}
+html.light{
+  --bg:#fffcf9;--bg2:#faf5f0;--bg3:#f3ecf8;
+  --text:#3b2e5a;--text-dim:#7b6e9a;--text-muted:#b0a6c8;
+  --gold:#d4a030;--amber:#c48d20;--violet:#b49aef;--purple:#9678e0;
+  --rose:#e8a0c8;
+  --grad1:linear-gradient(135deg,#f0d080,#f0c0d8,#d4b0f0,#b898e8);
+  --grad-hero:linear-gradient(135deg,#f0d080,#f0c0d8,#d4b0f0,#b898e8);
+  --grad2:linear-gradient(135deg,#f0d080 0%,#d4b0f0 100%);
+  --border:rgba(180,154,239,0.18);
+  --orb1:rgba(240,208,128,0.15);--orb2:rgba(180,152,232,0.12);--orb3:rgba(240,192,216,0.1);
+  --card-hover-bg:rgba(212,176,240,0.08);
+  --bar-a-from:#f0d080;--bar-a-to:#e8c060;
+  --bar-b-from:#d4b0f0;--bar-b-to:#b898e8;
+}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{font-family:var(--font-display);color:var(--text);background:var(--bg);overflow-x:hidden;line-height:1.7}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(167,139,250,0.3);border-radius:9px}
+
+/* ── Ambient orbs ── */
+.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:-1}
+.orb-1{width:600px;height:600px;background:var(--orb1);top:-200px;left:-100px;animation:drift1 20s ease-in-out infinite alternate}
+.orb-2{width:500px;height:500px;background:var(--orb2);bottom:-150px;right:-100px;animation:drift2 18s ease-in-out infinite alternate}
+.orb-3{width:400px;height:400px;background:var(--orb3);top:40%;left:50%;animation:drift3 22s ease-in-out infinite alternate}
+@keyframes drift1{0%{transform:translate(0,0)}100%{transform:translate(80px,60px)}}
+@keyframes drift2{0%{transform:translate(0,0)}100%{transform:translate(-60px,-80px)}}
+@keyframes drift3{0%{transform:translate(-50%,-50%)}100%{transform:translate(-40%,-40%)}}
+
+section{position:relative;padding:100px 0}
+.container{max-width:1140px;margin:0 auto;padding:0 36px}
+
+/* ── Gradient text ── */
+.gt{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-gt{background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* ═══ HERO ═══ */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative}
+.hero-content{position:relative;z-index:2}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;
+  background:var(--card-hover-bg);border:1px solid var(--border);
+  border-radius:100px;font-size:13px;color:var(--violet);letter-spacing:0.5px;
+  margin-bottom:40px;animation:fadeIn 1s ease both;font-family:var(--font-mono)}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-weight:800;font-size:clamp(3rem,9vw,7.5rem);line-height:0.92;
+  letter-spacing:-3px;margin-bottom:24px;animation:fadeUp 1s 0.2s ease both}
+.hero-desc{font-size:clamp(1rem,2vw,1.2rem);color:var(--text-dim);max-width:560px;
+  margin:0 auto 56px;font-weight:300;line-height:1.8;animation:fadeUp 1s 0.4s ease both}
+
+.hero-pills{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeUp 1s 0.6s ease both}
+.pill{padding:12px 28px;border-radius:100px;font-family:var(--font-mono);font-size:14px;
+  border:1px solid var(--border);background:var(--bg2);
+  transition:all 0.4s ease;cursor:default}
+.pill:hover{border-color:var(--violet);background:var(--bg3);transform:translateY(-2px)}
+.pill strong{font-weight:500}
+.pill .val{color:var(--gold);font-weight:500}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Divider ── */
+.divider{height:1px;background:var(--grad2);opacity:0.2;margin:0 auto;max-width:600px}
+
+/* ═══ SECTION HEADERS ═══ */
+.sec-eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:12px}
+.sec-title{font-weight:800;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-1px;margin-bottom:20px}
+.sec-desc{color:var(--text-dim);font-weight:300;max-width:600px;margin-bottom:56px;font-size:15px}
+
+/* ═══ ARCHITECTURE ═══ */
+.arch{padding:100px 0}
+.arch-flow{display:flex;align-items:stretch;gap:0;justify-content:center;flex-wrap:wrap}
+.arch-card{flex:1;min-width:280px;max-width:400px;padding:36px 32px;border-radius:16px;
+  border:1px solid var(--border);position:relative;overflow:hidden;
+  transition:all 0.4s ease;background:var(--bg2)}
+.arch-card::before{content:'';position:absolute;inset:-1px;border-radius:16px;padding:1px;
+  background:var(--grad1);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity 0.4s}
+.arch-card:hover::before{opacity:1}
+.arch-card:hover{transform:translateY(-4px)}
+.arch-card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:22px;margin-bottom:20px}
+.arch-card-icon.main-icon{background:color-mix(in srgb,var(--violet) 15%,transparent);color:var(--violet)}
+.arch-card-icon.sub-icon{background:color-mix(in srgb,var(--gold) 15%,transparent);color:var(--gold)}
+.arch-card h3{font-weight:700;font-size:1.2rem;margin-bottom:4px}
+.arch-card .role{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
+.arch-card p{font-size:14px;color:var(--text-dim);line-height:1.7}
+.arch-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.arch-tag{font-family:var(--font-mono);font-size:11px;padding:4px 12px;border-radius:100px;
+  background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15);color:var(--gold)}
+
+.arch-arrow{display:flex;align-items:center;padding:0 12px;flex-shrink:0}
+.arch-arrow svg{width:64px;height:32px}
+
+/* ═══ SPECS ═══ */
+.specs{background:var(--bg2)}
+.specs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.spec{padding:22px 24px;border-radius:12px;background:var(--bg);border:1px solid var(--border);
+  transition:all 0.35s ease}
+.spec:hover{border-color:rgba(251,191,36,0.3);transform:translateY(-2px)}
+.spec-k{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.spec-v{font-weight:600;font-size:1.05rem}
+.spec-v.hl{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* ═══ METRICS ═══ */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-bottom:72px}
+.m-card{text-align:center;padding:44px 24px 36px;border-radius:16px;background:var(--bg2);
+  border:1px solid var(--border);position:relative;overflow:hidden;transition:all 0.4s}
+.m-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:var(--grad1);opacity:0;transition:opacity 0.4s}
+.m-card:hover{transform:translateY(-4px)}.m-card:hover::after{opacity:1}
+.m-num{font-weight:800;font-size:clamp(2.8rem,5vw,3.8rem);line-height:1;margin-bottom:10px;
+  background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.m-label{font-size:14px;color:var(--text-dim);line-height:1.5}
+.m-sub{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:10px}
+
+/* ═══ CHART ═══ */
+.chart-wrap{max-width:780px;margin:0 auto}
+.chart-legend{display:flex;gap:28px;justify-content:center;margin-bottom:36px;font-size:13px;color:var(--text-dim)}
+.chart-legend-item{display:flex;align-items:center;gap:8px}
+.chart-dot{width:10px;height:10px;border-radius:3px}
+.chart-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.chart-name{width:52px;text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);flex-shrink:0}
+.chart-pair{flex:1;display:flex;flex-direction:column;gap:5px}
+.bar-line{display:flex;align-items:center;gap:10px}
+.bar{height:26px;border-radius:6px;min-width:3px;transition:width 1.8s cubic-bezier(0.16,1,0.3,1)}
+.bar.a{background:linear-gradient(90deg,var(--bar-a-from),var(--bar-a-to))}
+.bar.b{background:linear-gradient(90deg,var(--bar-b-from),var(--bar-b-to))}
+.bar-v{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);min-width:20px}
+
+/* ═══ COMPARISON TABLE ═══ */
+.cmp-table{width:100%;border-collapse:collapse;margin-top:64px;font-size:14px}
+.cmp-table th{text-align:left;padding:14px 18px;font-family:var(--font-mono);font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);font-weight:400;
+  border-bottom:1px solid var(--border)}
+.cmp-table td{padding:14px 18px;border-bottom:1px solid var(--border)}
+.cmp-table tr:hover td{background:var(--card-hover-bg)}
+.ok{color:var(--gold);font-weight:600}
+.err{color:var(--rose);font-weight:600}
+
+/* ═══ LIMITATIONS ═══ */
+.limits{background:var(--bg2)}
+.lim-list{list-style:none;display:flex;flex-direction:column;gap:14px;max-width:800px}
+.lim-list li{padding:20px 28px;border-radius:12px;background:var(--bg);
+  border:1px solid var(--border);font-size:14px;color:var(--text-dim);line-height:1.7;
+  position:relative;padding-left:48px;transition:all 0.35s}
+.lim-list li::before{content:'';position:absolute;left:24px;top:26px;width:8px;height:8px;
+  border-radius:50%;background:var(--rose);opacity:0.6}
+.lim-list li:hover{border-color:rgba(244,114,182,0.3);color:var(--text)}
+
+/* ═══ FOOTER ═══ */
+footer{text-align:center;padding:64px 36px;font-size:13px;color:var(--text-muted)}
+footer a{color:var(--violet);text-decoration:none;transition:color 0.3s}
+footer a:hover{color:var(--gold)}
+footer .footer-line{width:60px;height:2px;background:var(--grad2);margin:0 auto 20px;border-radius:1px}
+
+/* ═══ REVEAL ═══ */
+.rv{opacity:0;transform:translateY(36px);transition:all 0.9s cubic-bezier(0.22,1,0.36,1)}
+.rv.vis{opacity:1;transform:translateY(0)}
+.rv-d1{transition-delay:0.08s}.rv-d2{transition-delay:0.16s}
+.rv-d3{transition-delay:0.24s}.rv-d4{transition-delay:0.32s}
+
+@media(max-width:768px){
+  .container{padding:0 20px}
+  section{padding:64px 0}
+  .hero-pills{flex-direction:column;align-items:center}
+  .arch-flow{flex-direction:column;align-items:center;gap:20px}
+  .arch-arrow{transform:rotate(90deg);padding:8px 0}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+  .chart-row{flex-direction:column;align-items:flex-start;gap:6px}
+  .chart-name{width:auto;text-align:left}
+}
+@media(max-width:480px){.metrics-grid{grid-template-columns:1fr}}
+
+/* ═══ THEME TOGGLE ═══ */
+.theme-toggle{position:fixed;top:24px;right:24px;z-index:100;width:44px;height:44px;
+  border-radius:50%;border:1px solid var(--border);background:var(--bg2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.4s ease;box-shadow:0 2px 12px rgba(0,0,0,0.15)}
+.theme-toggle:hover{transform:scale(1.1);border-color:var(--violet)}
+.theme-toggle svg{width:20px;height:20px;transition:all 0.4s ease}
+.theme-toggle .icon-sun{display:none;fill:var(--gold)}
+.theme-toggle .icon-moon{display:block;fill:var(--violet)}
+html.light .theme-toggle .icon-sun{display:block}
+html.light .theme-toggle .icon-moon{display:none}
+
+/* Smooth theme transition */
+html.transitioning,html.transitioning *,html.transitioning *::before,html.transitioning *::after{
+  transition:background 0.5s ease,color 0.5s ease,border-color 0.5s ease,box-shadow 0.5s ease !important}
+</style>
+<script>if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light')</script>
+</head>
+<body>
+
+<button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+  <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="21" x2="12" y2="23" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="12" x2="3" y2="12" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="21" y1="12" x2="23" y2="12" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/></svg>
+</button>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow"><span class="dot"></span> 4B Parameter Agent Model</div>
+    <h1><span class="hero-gt">Loco</span>Operator<br><span style="font-weight:300;font-size:0.45em;letter-spacing:2px;opacity:0.5">— 4B —</span></h1>
+    <p class="hero-desc">A distilled code exploration agent trained on Qwen3-Coder-Next traces. Navigate codebases with precision — locally, at zero cost.</p>
+    <div class="hero-pills">
+      <div class="pill"><strong>Samples</strong> <span class="val">170K</span></div>
+      <div class="pill"><strong>JSON Valid</strong> <span class="val">100%</span></div>
+      <div class="pill"><strong>Tool Align</strong> <span class="val">100%</span></div>
+      <div class="pill"><strong>Syntax OK</strong> <span class="val">100%</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section class="arch">
+  <div class="container">
+    <div class="sec-eyebrow rv">Architecture</div>
+    <div class="sec-title rv">Agent Collaboration</div>
+    <p class="sec-desc rv">A two-tier agent system where the main model delegates codebase exploration to a lightweight local sub agent.</p>
+    <div class="arch-flow">
+      <div class="arch-card rv">
+        <div class="arch-card-icon main-icon">&#9670;</div>
+        <h3>Qwen3-Coder-Next</h3>
+        <div class="role">Main Agent</div>
+        <p>Decision-making, planning, code generation and editing. Orchestrates the full agent loop.</p>
+      </div>
+      <div class="arch-arrow rv">
+        <svg viewBox="0 0 64 32"><path d="M0 16 L44 16" stroke="url(#ag)" stroke-width="2" fill="none" stroke-dasharray="4 4"><animate attributeName="stroke-dashoffset" from="8" to="0" dur="0.8s" repeatCount="indefinite"/></path><polygon points="44,10 58,16 44,22" fill="var(--violet)"/><defs><linearGradient id="ag" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="var(--gold)"/><stop offset="100%" stop-color="var(--violet)"/></linearGradient></defs></svg>
+      </div>
+      <div class="arch-card rv rv-d2">
+        <div class="arch-card-icon sub-icon">&#9672;</div>
+        <h3 class="gt">LocoOperator-4B</h3>
+        <div class="role">Explorer Sub Agent</div>
+        <p>Codebase search, file reading, code navigation and analysis. Fast, focused, local.</p>
+        <div class="arch-tags">
+          <span class="arch-tag">GGUF</span>
+          <span class="arch-tag">llama.cpp</span>
+          <span class="arch-tag">Mac Studio</span>
+          <span class="arch-tag">50K ctx</span>
+          <span class="arch-tag">10 turns</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ TRAINING SPECS ═══ -->
+<section class="specs">
+  <div class="container">
+    <div class="sec-eyebrow rv">Training</div>
+    <div class="sec-title rv">Specifications</div>
+    <div class="specs-grid">
+      <div class="spec rv"><div class="spec-k">Base Model</div><div class="spec-v">Qwen3-4B-Instruct-2507</div></div>
+      <div class="spec rv"><div class="spec-k">Teacher</div><div class="spec-v">Qwen3-Coder-Next</div></div>
+      <div class="spec rv"><div class="spec-k">Method</div><div class="spec-v">Full-Parameter SFT</div></div>
+      <div class="spec rv"><div class="spec-k">Training Data</div><div class="spec-v hl">170,356 samples</div></div>
+      <div class="spec rv"><div class="spec-k">Hardware</div><div class="spec-v">4× H200 141GB</div></div>
+      <div class="spec rv"><div class="spec-k">Parallelism</div><div class="spec-v">DDP</div></div>
+      <div class="spec rv"><div class="spec-k">Precision</div><div class="spec-v">BF16</div></div>
+      <div class="spec rv"><div class="spec-k">Epochs</div><div class="spec-v">1</div></div>
+      <div class="spec rv"><div class="spec-k">Effective Batch</div><div class="spec-v">32</div></div>
+      <div class="spec rv"><div class="spec-k">Learning Rate</div><div class="spec-v">2e-5</div></div>
+      <div class="spec rv"><div class="spec-k">Max Seq Length</div><div class="spec-v hl">16,384 tokens</div></div>
+      <div class="spec rv"><div class="spec-k">Training Time</div><div class="spec-v">~25 hours</div></div>
+      <div class="spec rv"><div class="spec-k">Template</div><div class="spec-v">qwen3_nothinking</div></div>
+      <div class="spec rv"><div class="spec-k">Framework</div><div class="spec-v">MS-SWIFT</div></div>
+      <div class="spec rv"><div class="spec-k">Checkpoint</div><div class="spec-v">Step 2524</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ RESULTS ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-eyebrow rv">Evaluation</div>
+    <div class="sec-title rv">Results on 65 Samples</div>
+    <div class="metrics-grid">
+      <div class="m-card rv rv-d1">
+        <div class="m-num" data-to="100" data-suffix="%">0%</div>
+        <div class="m-label">Tool Call Presence Alignment</div>
+        <div class="m-sub">65/65</div>
+      </div>
+      <div class="m-card rv rv-d2">
+        <div class="m-num" data-to="65.6" data-dec="1" data-suffix="%">0%</div>
+        <div class="m-label">First Tool Type Match</div>
+        <div class="m-sub">40/61</div>
+      </div>
+      <div class="m-card rv rv-d3">
+        <div class="m-num" data-to="100" data-suffix="%">0%</div>
+        <div class="m-label">JSON Validity</div>
+        <div class="m-sub">76/76</div>
+      </div>
+      <div class="m-card rv rv-d4">
+        <div class="m-num" data-to="100" data-suffix="%">0%</div>
+        <div class="m-label">Argument Syntax Correctness</div>
+        <div class="m-sub">76/76</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TOOL CHART ═══ -->
+<section class="specs">
+  <div class="container">
+    <div class="sec-eyebrow rv">Comparison</div>
+    <div class="sec-title rv">Tool Distribution</div>
+    <div class="chart-wrap rv">
+      <div class="chart-legend">
+        <div class="chart-legend-item"><div class="chart-dot" style="background:var(--gold)"></div>LocoOperator-4B</div>
+        <div class="chart-legend-item"><div class="chart-dot" style="background:var(--violet)"></div>Qwen3-Coder-Next</div>
+      </div>
+      <div id="chart"></div>
+    </div>
+
+    <table class="cmp-table rv">
+      <thead><tr><th>Model</th><th>JSON Valid</th><th>Args Syntax</th><th>Issues</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--gold)">LocoOperator-4B</td><td><span class="ok">76/76 (100%)</span></td><td><span class="ok">76/76 (100%)</span></td><td style="color:var(--text-muted)">None</td></tr>
+        <tr><td style="color:var(--violet)">Qwen3-Coder-Next</td><td><span class="ok">89/89 (100%)</span></td><td><span class="err">78/89 (87.6%)</span></td><td style="color:var(--text-muted)">11 calls with empty arguments</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══ LIMITATIONS ═══ -->
+<section class="limits">
+  <div class="container">
+    <div class="sec-eyebrow rv">Caveats</div>
+    <div class="sec-title rv">Known Limitations</div>
+    <ul class="lim-list">
+      <li class="rv rv-d1">First-tool-type match is 65.6% — the model sometimes picks a different (but not necessarily wrong) tool than the teacher</li>
+      <li class="rv rv-d2">Tends to under-generate parallel tool calls compared to the teacher (76 vs 89 total calls across 65 samples)</li>
+      <li class="rv rv-d3">Preference for Bash over Read may indicate the model defaults to shell commands where file reads would be more appropriate</li>
+      <li class="rv rv-d4">Evaluated on 65 samples only; larger-scale evaluation needed</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-line"></div>
+  <p>LocoOperator-4B · Distilled from Qwen3-Coder-Next · Built on <a href="https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507">Qwen3-4B-Instruct-2507</a></p>
+</footer>
+
+<script>
+const D=[
+  {n:'Read',a:22,b:32},{n:'Bash',a:22,b:17},{n:'Grep',a:14,b:18},
+  {n:'Glob',a:9,b:11},{n:'Task',a:7,b:7},{n:'Write',a:2,b:3}
+];
+const mx=Math.max(...D.flatMap(d=>[d.a,d.b]));
+const ch=document.getElementById('chart');
+D.forEach(d=>{
+  ch.innerHTML+=`<div class="chart-row"><div class="chart-name">${d.n}</div><div class="chart-pair">
+    <div class="bar-line"><div class="bar a" data-w="${(d.a/mx*100).toFixed(1)}" style="width:0"></div><div class="bar-v">${d.a}</div></div>
+    <div class="bar-line"><div class="bar b" data-w="${(d.b/mx*100).toFixed(1)}" style="width:0"></div><div class="bar-v">${d.b}</div></div>
+  </div></div>`;
+});
+
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('vis');
+    e.target.querySelectorAll('.bar').forEach(b=>{setTimeout(()=>{b.style.width=b.dataset.w+'%'},120)});
+    e.target.querySelectorAll('.m-num[data-to]').forEach(el=>ctr(el));
+  });
+},{threshold:0.12});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+function ctr(el){
+  const to=parseFloat(el.dataset.to),dec=parseInt(el.dataset.dec||'0'),sfx=el.dataset.suffix||'',dur=1400,t0=performance.now();
+  (function tick(now){
+    const p=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-p,3);
+    el.textContent=(ease*to).toFixed(dec)+sfx;
+    if(p<1)requestAnimationFrame(tick);
+  })(t0);
+}
+
+function toggleTheme(){
+  const html=document.documentElement;
+  html.classList.add('transitioning');
+  html.classList.toggle('light');
+  localStorage.setItem('theme',html.classList.contains('light')?'light':'dark');
+  setTimeout(()=>html.classList.remove('transitioning'),600);
+}
+</script>
+</body>
+</html>
