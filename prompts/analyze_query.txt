@@ -1,0 +1,1 @@
+Analyze the {project} codebase at data/repos/{project} to answer: {question} Save your answer to data/outputs/{output_file}

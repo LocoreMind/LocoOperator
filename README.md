@@ -22,6 +22,8 @@
 - 🏗️ [Architecture](#️-architecture)
 - 📈 [Performance](#-performance)
 - 🚀 [Quick Start](#-quick-start)
+- 🔧 [Analysis Pipeline](#-analysis-pipeline)
+- 📁 [Project Structure](#-project-structure)
 - ⚠️ [Known Limitations](#️-known-limitations)
 - 📄 [License](#-license)
 - 🙏 [Acknowledgments](#-acknowledgments)
@@ -62,25 +64,9 @@ LocoOperator-4B is a tool-calling agent model trained via knowledge distillation
 
 LocoOperator-4B operates as a **sub agent (explorer)** within a two-tier agent system:
 
-```
-┌─────────────────────────────────────────────────┐
-│                  Main Agent                      │
-│            Qwen3-Coder-Next                      │
-│   (planning, code generation, editing)           │
-│                                                  │
-│   Delegates exploration tasks ──────┐            │
-└─────────────────────────────────────┼────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────┐
-│              Explorer Sub Agent                  │
-│            LocoOperator-4B                       │
-│   (Glob, Grep, Read, lightweight Bash)           │
-│                                                  │
-│   GGUF · llama.cpp · Mac Studio                  │
-│   50K context · 10 turns per task                │
-└─────────────────────────────────────────────────┘
-```
+<div align="center">
+  <img src="assets/architecture.png" width="80%" alt="Architecture" />
+</div>
 
 The main agent handles decision-making and code generation while delegating codebase exploration to LocoOperator-4B — keeping API costs low and latency minimal.
 
@@ -136,8 +122,10 @@ The model perfectly learned *when* to use tools vs. when to respond with text (1
 
 ### Prerequisites
 
-- 🖥️ **Mac Studio** (or any machine with sufficient RAM for 4B GGUF)
-- 📦 **llama.cpp** ([Installation guide](https://github.com/ggerganov/llama.cpp))
+- **Claude Code** — `npm install -g @anthropic-ai/claude-code`
+- **llama.cpp** — build from source or `brew install llama.cpp`
+- **uv** — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **OpenRouter API key** — https://openrouter.ai/keys
 
 ### Serve with llama.cpp
 
@@ -160,6 +148,88 @@ The model perfectly learned *when* to use tools vs. when to respond with text (1
 | Context size | 50K | Covers multi-turn exploration with room for tool outputs |
 | Max turns | 10 | Sufficient for focused codebase exploration tasks |
 | Temperature | 0.7 | Balanced between determinism and exploration |
+
+## 🔧 Analysis Pipeline
+
+This repo includes a hybrid analysis pipeline that combines LocoOperator-4B (local) with a cloud LLM via OpenRouter, orchestrated through `claude -p`.
+
+```
+claude -p (sonnet) ──→ proxy (9091) ──→ OpenRouter Qwen3-Coder-Next
+  └─ subagent (haiku) ─→ proxy (9091) ──→ local llama-server (8080)
+```
+
+The main agent runs as sonnet (cloud), and when it spawns subagents (Task tool) they default to haiku, which the proxy routes to the local 4B model. If the local model hits context limits or exceeds 10 turns, the proxy automatically falls back to OpenRouter.
+
+The proxy (`scripts/proxy.py`) handles:
+- Anthropic Messages API ↔ OpenAI Chat Completions format conversion for the local model
+- Parsing `<tool_call>` text output from the local model back into Anthropic tool_use blocks
+- Automatic fallback to OpenRouter on context overflow
+
+### Setup
+
+```bash
+# Install Python dependencies
+uv sync
+
+# Configure your OpenRouter API key
+cp .env.example .env
+# Edit .env and set OPENROUTER_API_KEY
+```
+
+`.claude/settings.local.json` is auto-generated on first run from your `.env` key. No need to create it manually.
+
+Place your GGUF model at `models/LocoOperator-4B-GGUF/LocoOperator-4B.gguf`.
+
+Place target projects under `data/repos/`.
+
+### Single query test
+
+```bash
+./scripts/test_single.sh tqdm "How does tqdm detect if running in a Jupyter notebook?"
+```
+
+### Batch analyze
+
+```bash
+./scripts/analyze.sh tqdm
+```
+
+This reads queries from `data/queries/tqdm-queries.txt` and saves results to `data/outputs/tqdm/`.
+
+### Adding More Projects
+
+1. Clone a project into `data/repos/`:
+   ```bash
+   git clone --depth 1 https://github.com/user/repo data/repos/repo
+   rm -rf data/repos/repo/.git
+   ```
+2. Create a queries file at `data/queries/repo-queries.txt` (tab-separated `id\tquery`)
+3. Run: `./scripts/analyze.sh repo`
+
+## 📁 Project Structure
+
+```
+LocoOperator/
+├── .env.example                         # OpenRouter key template
+├── pyproject.toml
+├── models/LocoOperator-4B-GGUF/
+│   └── LocoOperator-4B.gguf
+├── examples/                            # model inference examples
+│   ├── quick_start.py
+│   └── codebase_analysis_example.py
+├── data/
+│   ├── repos/                           # target projects to analyze
+│   ├── queries/tqdm-queries.txt         # analysis queries (tab-separated: id\tquery)
+│   └── outputs/                         # analysis results
+├── prompts/
+│   └── analyze_query.txt                # prompt template
+└── scripts/
+    ├── proxy.py                         # hybrid routing proxy
+    ├── setup.sh                         # auto-generates .claude/settings.local.json
+    ├── start_services.sh                # auto-starts llama-server + proxy
+    ├── analyze.sh                       # batch analysis runner
+    └── test_single.sh                   # single query test
+```
 
 ## Training Details
 

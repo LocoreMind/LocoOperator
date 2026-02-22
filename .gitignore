@@ -1,0 +1,8 @@
+.env
+.claude/
+models/
+data/repos/
+data/outputs/
+__pycache__/
+.venv/
+uv.lock
