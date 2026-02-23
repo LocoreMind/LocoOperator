@@ -6,10 +6,10 @@
 
 <div align="center">
 
-[![MODEL](https://img.shields.io/badge/Model-FFB300?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/FutureMa)
+[![MODEL](https://img.shields.io/badge/Model-FFB300?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/LocoreMind/LocoOperator-4B)
 [![Blog](https://img.shields.io/badge/Blog-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://locoremind.com/blog/loco-operator)
-[![DATA](https://img.shields.io/badge/Data-0040A1?style=for-the-badge&logo=huggingface&logoColor=ffffff)](https://huggingface.co/datasets/FutureMa/cc)
-[![BASE](https://img.shields.io/badge/Base_Model-7C3AED?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LocoreMind/LocoOperator)
+[![Colab](https://img.shields.io/badge/Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/LocoreMind/LocoOperator/blob/main/LocoOperator_4B.ipynb)
 
 </div>
 
@@ -31,7 +31,7 @@
 
 ## 📰 News & Updates
 
-- **\[2026-02-22\]** 🎉 LocoOperator-4B model card and evaluation analysis released.
+- **\[2026-02-23\]** 🎉 LocoOperator-4B model card and evaluation analysis released.
 - **\[2026-02-20\]** 🚀 LocoOperator-4B (Step 2524) training completed. GGUF quantized for local deployment.
 
 ## 📝 Introduction
