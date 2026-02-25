@@ -171,6 +171,10 @@ The proxy (`scripts/proxy.py`) handles:
 ### Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/LocoreMind/LocoOperator.git
+cd LocoOperator
+
 # Install Python dependencies
 uv sync
 
